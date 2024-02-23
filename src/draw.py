@@ -12,7 +12,9 @@ class GameDraw:
         self.hex_width = self.hex_size * math.sqrt(3)
         self.hex_height = 2 * self.hex_size
         self.hexagon_centers = []
-        self.board = [0] * 61
+        self.board = [1, 0, 0, 0, -1, 1, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0,
+                      0, 0,
+                      -1, 0, 1, 0, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, -1, 1, 0, 0, 0, -1]
         self.colors = {
             "WHITE": (255, 255, 255),
             "BLACK": (0, 0, 0),
@@ -47,6 +49,24 @@ class GameDraw:
     def draw_piece(self, x, y, color):
         pygame.draw.circle(self.screen, color, (x, y), 20)
 
+    def draw_goal_squares(self):
+        square_size = 20  # Adjust the size as needed
+        half_square_size = square_size // 2  # Calculate half size for positioning
+
+        # Draw red square
+        pygame.draw.rect(self.screen, self.colors["RED"],
+                         (self.hexagon_centers[26][0] - half_square_size,
+                          self.hexagon_centers[26][1] - half_square_size,
+                          square_size,
+                          square_size))
+
+        # Draw blue square
+        pygame.draw.rect(self.screen, self.colors["BLUE"],
+                         (self.hexagon_centers[34][0] - half_square_size,
+                          self.hexagon_centers[34][1] - half_square_size,
+                          square_size,
+                          square_size))
+
     def draw_board(self):
         for i in range(4, 0, -1):
             self.draw_line_of_hexagons(200 + i * 35, self.screen_height / 2 - i * 60, 9 - i)
@@ -54,6 +74,7 @@ class GameDraw:
         for i in range(1, 5):
             self.draw_line_of_hexagons(200 + i * 35, self.screen_height / 2 + i * 60, 9 - i)
         self.draw_all_pieces()
+        self.draw_goal_squares()
 
     def draw_all_pieces(self):
         for i in range(61):
