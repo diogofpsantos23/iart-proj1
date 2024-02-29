@@ -100,7 +100,6 @@ class GameDraw:
     def print_player_wins(self, player):
         top_clear_rect = pygame.Rect(0, 0, self.screen_width, 60)
         pygame.draw.rect(self.screen, self.colors["WHITE"], top_clear_rect)
-
         font = pygame.font.Font(None, 48)
         blue_text = font.render("Blue Wins!", True, self.colors["BLUE"])
         red_text = font.render("Red Wins!", True, self.colors["RED"])
@@ -108,3 +107,12 @@ class GameDraw:
             self.screen.blit(blue_text, (20, 20))
         else:
             self.screen.blit(red_text, (self.screen.get_width() - red_text.get_width() - 20, 20))
+
+    def print_draw(self):
+        top_clear_rect = pygame.Rect(0, 0, self.screen_width, 60)
+        pygame.draw.rect(self.screen, self.colors["WHITE"], top_clear_rect)
+        font = pygame.font.Font(None, 48)
+        text = font.render("Draw!", True, self.colors["BLACK"])
+        text_width = text.get_width()
+        x_coordinate = (self.screen_width - text_width) / 2
+        self.screen.blit(text, (x_coordinate, 20))

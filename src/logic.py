@@ -17,6 +17,8 @@ class GameLogic:
         ]
         self.selected_piece_index = None
         self.highlighted_hexagons = []
+        self.adjacent_friendly_pieces = []
+        self.adjacent_enemy_pieces = []
 
     def check_hovered_piece(self):
         mouse_pos = pygame.mouse.get_pos()
@@ -29,6 +31,7 @@ class GameLogic:
 
     def highlight_possible_moves(self, piece_index, current_player):
         self.highlighted_hexagons = []
+        self.adjacent_friendly_pieces = []
         left_border_indexes = [0, 5, 11, 18, 26, 35, 43, 50, 56]
         right_border_indexes = [4, 10, 17, 25, 34, 42, 49, 55, 60]
         piece_row = 0
@@ -42,14 +45,22 @@ class GameLogic:
         if piece_index in left_border_indexes:
             if self.game_draw.board[piece_index + 1] == 0:
                 self.highlighted_hexagons.append(piece_index + 1)
+            elif self.game_draw.board[piece_index + 1] == current_player:
+                self.adjacent_friendly_pieces.append(piece_index + 1)
         elif piece_index in right_border_indexes:
             if self.game_draw.board[piece_index - 1] == 0:
                 self.highlighted_hexagons.append(piece_index - 1)
+            elif self.game_draw.board[piece_index - 1] == current_player:
+                self.adjacent_friendly_pieces.append(piece_index - 1)
         else:
             if self.game_draw.board[piece_index + 1] == 0:
                 self.highlighted_hexagons.append(piece_index + 1)
             if self.game_draw.board[piece_index - 1] == 0:
                 self.highlighted_hexagons.append(piece_index - 1)
+            if self.game_draw.board[piece_index + 1] == current_player:
+                self.adjacent_friendly_pieces.append(piece_index + 1)
+            if self.game_draw.board[piece_index - 1] == current_player:
+                self.adjacent_friendly_pieces.append(piece_index - 1)
 
         # Diagonal Moves
         if piece_row == 0:
@@ -57,48 +68,131 @@ class GameLogic:
             for i in self.board_indexes[1][j:j + 2]:
                 if self.game_draw.board[i] == 0:
                     self.highlighted_hexagons.append(i)
+                elif self.game_draw.board[i] == current_player:
+                    self.adjacent_friendly_pieces.append(i)
         elif 0 < piece_row < 4:
             j = self.board_indexes[piece_row].index(piece_index)
             for i in self.board_indexes[piece_row - 1][j - 1:j + 1]:
                 if self.game_draw.board[i] == 0:
                     self.highlighted_hexagons.append(i)
+                elif self.game_draw.board[i] == current_player:
+                    self.adjacent_friendly_pieces.append(i)
             for i in self.board_indexes[piece_row + 1][j:j + 2]:
                 if self.game_draw.board[i] == 0:
                     self.highlighted_hexagons.append(i)
+                elif self.game_draw.board[i] == current_player:
+                    self.adjacent_friendly_pieces.append(i)
         elif piece_row == 4:
             j = self.board_indexes[4].index(piece_index)
             for i in self.board_indexes[3][j - 1:j + 1]:
                 if self.game_draw.board[i] == 0:
                     self.highlighted_hexagons.append(i)
+                elif self.game_draw.board[i] == current_player:
+                    self.adjacent_friendly_pieces.append(i)
             for i in self.board_indexes[5][j - 1:j + 1]:
                 if self.game_draw.board[i] == 0:
                     self.highlighted_hexagons.append(i)
+                elif self.game_draw.board[i] == current_player:
+                    self.adjacent_friendly_pieces.append(i)
         elif 4 < piece_row < 8:
             j = self.board_indexes[piece_row].index(piece_index)
             for i in self.board_indexes[piece_row - 1][j:j + 2]:
                 if self.game_draw.board[i] == 0:
                     self.highlighted_hexagons.append(i)
+                elif self.game_draw.board[i] == current_player:
+                    self.adjacent_friendly_pieces.append(i)
             for i in self.board_indexes[piece_row + 1][j - 1:j + 1]:
                 if self.game_draw.board[i] == 0:
                     self.highlighted_hexagons.append(i)
+                elif self.game_draw.board[i] == current_player:
+                    self.adjacent_friendly_pieces.append(i)
         else:
             j = self.board_indexes[8].index(piece_index)
             for i in self.board_indexes[7][j:j + 2]:
                 if self.game_draw.board[i] == 0:
                     self.highlighted_hexagons.append(i)
+                elif self.game_draw.board[i] == current_player:
+                    self.adjacent_friendly_pieces.append(i)
 
         if current_player == 1 and 26 in self.highlighted_hexagons:
             self.highlighted_hexagons.remove(26)
         if current_player == -1 and 34 in self.highlighted_hexagons:
             self.highlighted_hexagons.remove(34)
 
+        for i in self.adjacent_friendly_pieces:
+            self.highlighted_hexagons += self.check_possible_captures(i, current_player)
+
         return self.highlighted_hexagons
+
+    def check_possible_captures(self, piece_index, current_player):
+        self.adjacent_enemy_pieces = []
+        left_border_indexes = [0, 5, 11, 18, 26, 35, 43, 50, 56]
+        right_border_indexes = [4, 10, 17, 25, 34, 42, 49, 55, 60]
+        piece_row = 0
+        for row in self.board_indexes:
+            if piece_index in row:
+                break
+            else:
+                piece_row += 1
+
+        # Horizontal Moves
+        if piece_index in left_border_indexes:
+            if self.game_draw.board[piece_index + 1] == -current_player:
+                self.adjacent_enemy_pieces.append(piece_index + 1)
+        elif piece_index in right_border_indexes:
+            if self.game_draw.board[piece_index - 1] == -current_player:
+                self.adjacent_enemy_pieces.append(piece_index - 1)
+        else:
+            if self.game_draw.board[piece_index + 1] == -current_player:
+                self.adjacent_enemy_pieces.append(piece_index + 1)
+            if self.game_draw.board[piece_index - 1] == -current_player:
+                self.adjacent_enemy_pieces.append(piece_index - 1)
+
+        # Diagonal Moves
+        if piece_row == 0:
+            j = self.board_indexes[0].index(piece_index)
+            for i in self.board_indexes[1][j:j + 2]:
+                if self.game_draw.board[i] == -current_player:
+                    self.adjacent_enemy_pieces.append(i)
+        elif 0 < piece_row < 4:
+            j = self.board_indexes[piece_row].index(piece_index)
+            for i in self.board_indexes[piece_row - 1][j - 1:j + 1]:
+                if self.game_draw.board[i] == -current_player:
+                    self.adjacent_enemy_pieces.append(i)
+            for i in self.board_indexes[piece_row + 1][j:j + 2]:
+                if self.game_draw.board[i] == -current_player:
+                    self.adjacent_enemy_pieces.append(i)
+        elif piece_row == 4:
+            j = self.board_indexes[4].index(piece_index)
+            for i in self.board_indexes[3][j - 1:j + 1]:
+                if self.game_draw.board[i] == -current_player:
+                    self.adjacent_enemy_pieces.append(i)
+            for i in self.board_indexes[5][j - 1:j + 1]:
+                if self.game_draw.board[i] == -current_player:
+                    self.adjacent_enemy_pieces.append(i)
+        elif 4 < piece_row < 8:
+            j = self.board_indexes[piece_row].index(piece_index)
+            for i in self.board_indexes[piece_row - 1][j:j + 2]:
+                if self.game_draw.board[i] == -current_player:
+                    self.adjacent_enemy_pieces.append(i)
+            for i in self.board_indexes[piece_row + 1][j - 1:j + 1]:
+                if self.game_draw.board[i] == -current_player:
+                    self.adjacent_enemy_pieces.append(i)
+        else:
+            j = self.board_indexes[8].index(piece_index)
+            for i in self.board_indexes[7][j:j + 2]:
+                if self.game_draw.board[i] == -current_player:
+                    self.adjacent_enemy_pieces.append(i)
+
+        return self.adjacent_enemy_pieces
 
     def move_piece(self, new_hexagon_index):
         self.game_draw.board[new_hexagon_index] = self.game_draw.board[self.selected_piece_index]
         self.game_draw.board[self.selected_piece_index] = 0
         self.selected_piece_index = None
         self.highlighted_hexagons = []
+        self.adjacent_friendly_pieces = []
+        self.adjacent_enemy_pieces = []
 
     def check_blocked_piece(self, piece_index):
         team = self.game_draw.board[piece_index]
@@ -162,6 +256,16 @@ class GameLogic:
 
         return False
 
+    def count_blocked_pieces(self):
+        blocked_blue_pieces = 0
+        blocked_red_pieces = 0
+        for i in range(61):
+            if self.game_draw.board[i] == 1 and self.check_blocked_piece(i):
+                blocked_blue_pieces += 1
+            elif self.game_draw.board[i] == -1 and self.check_blocked_piece(i):
+                blocked_red_pieces += 1
+        return blocked_blue_pieces, blocked_red_pieces
+
     def place_piece(self, hexagon_index, color):
         if self.game_draw.board[hexagon_index] != 0:
             return
@@ -177,7 +281,10 @@ class GameLogic:
 
         for hexagon_index in self.highlighted_hexagons:
             x, y = self.game_draw.hexagon_centers[hexagon_index]
-            pygame.draw.circle(self.game_draw.screen, (0, 255, 0), (x, y), 10, width=10)
+            if self.game_draw.board[hexagon_index] == 0:
+                pygame.draw.circle(self.game_draw.screen, (0, 255, 0), (x, y), 10, width=10)
+            else:
+                pygame.draw.circle(self.game_draw.screen, (255, 255, 0), (x, y), 10, width=10)
 
         for piece_index in range(61):
             if self.game_draw.board[piece_index] != 0 and self.check_blocked_piece(piece_index):

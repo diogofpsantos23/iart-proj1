@@ -34,8 +34,6 @@ class AboyneGame:
                                         (self.current_player == -1 and clicked_piece_index != 34):
                                     self.game_logic.move_piece(clicked_piece_index)
                                     self.current_player = -self.current_player  # Switch turns after a move
-                                else:
-                                    print("Invalid move: You cannot move to this hexagon.")
                             else:
                                 self.game_logic.selected_piece_index = None
                                 self.game_logic.highlighted_hexagons = []
@@ -61,6 +59,33 @@ class AboyneGame:
                 pygame.display.flip()
                 time.sleep(3)
                 running = False
+            if self.game_draw.board.count(-1) == 0:
+                self.game_draw.print_player_wins(1)
+                pygame.display.flip()
+                time.sleep(3)
+                running = False
+            if self.game_draw.board.count(1) == 0:
+                self.game_draw.print_player_wins(-1)
+                pygame.display.flip()
+                time.sleep(3)
+                running = False
+            if self.game_draw.board.count(1) + self.game_draw.board.count(-1) == self.game_logic.count_blocked_pieces()[
+                0] + self.game_logic.count_blocked_pieces()[1]:
+                if self.game_draw.board.count(1) > self.game_draw.board.count(-1):
+                    self.game_draw.print_player_wins(1)
+                    pygame.display.flip()
+                    time.sleep(3)
+                    running = False
+                elif self.game_draw.board.count(1) < self.game_draw.board.count(-1):
+                    self.game_draw.print_player_wins(-1)
+                    pygame.display.flip()
+                    time.sleep(3)
+                    running = False
+                else:
+                    self.game_draw.print_draw()
+                    pygame.display.flip()
+                    time.sleep(3)
+                    running = False
 
         pygame.quit()
         sys.exit()
