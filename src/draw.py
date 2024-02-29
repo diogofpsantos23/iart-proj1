@@ -86,3 +86,25 @@ class GameDraw:
                 self.draw_piece(self.hexagon_centers[i][0], self.hexagon_centers[i][1], self.colors["DARKBLUE"])
             elif self.board[i] == -2:
                 self.draw_piece(self.hexagon_centers[i][0], self.hexagon_centers[i][1], self.colors["DARKRED"])
+
+    def print_player_turn(self, current_player, erase=False):
+        if erase: return
+        font = pygame.font.Font(None, 48)
+        blue_text = font.render("Blue's Turn", True, self.colors["BLUE"])
+        red_text = font.render("Red's Turn", True, self.colors["RED"])
+        if current_player == 1:
+            self.screen.blit(blue_text, (20, 20))
+        else:
+            self.screen.blit(red_text, (self.screen.get_width() - red_text.get_width() - 20, 20))
+
+    def print_player_wins(self, player):
+        top_clear_rect = pygame.Rect(0, 0, self.screen_width, 60)
+        pygame.draw.rect(self.screen, (255, 255, 255), top_clear_rect)
+
+        font = pygame.font.Font(None, 48)
+        blue_text = font.render("Blue Wins!", True, self.colors["BLUE"])
+        red_text = font.render("Red Wins!", True, self.colors["RED"])
+        if player == 1:
+            self.screen.blit(blue_text, (20, 20))
+        else:
+            self.screen.blit(red_text, (self.screen.get_width() - red_text.get_width() - 20, 20))

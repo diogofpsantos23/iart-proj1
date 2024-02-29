@@ -1,4 +1,3 @@
-import sys
 import pygame
 
 
@@ -28,7 +27,7 @@ class GameLogic:
                 return i
         return None
 
-    def highlight_possible_moves(self, piece_index):
+    def highlight_possible_moves(self, piece_index, current_player):
         self.highlighted_hexagons = []
         left_border_indexes = [0, 5, 11, 18, 26, 35, 43, 50, 56]
         right_border_indexes = [4, 10, 17, 25, 34, 42, 49, 55, 60]
@@ -61,7 +60,6 @@ class GameLogic:
         elif 0 < piece_row < 4:
             j = self.board_indexes[piece_row].index(piece_index)
             for i in self.board_indexes[piece_row - 1][j - 1:j + 1]:
-                print(i)
                 if self.game_draw.board[i] == 0:
                     self.highlighted_hexagons.append(i)
             for i in self.board_indexes[piece_row + 1][j:j + 2]:
@@ -89,6 +87,11 @@ class GameLogic:
                 if self.game_draw.board[i] == 0:
                     self.highlighted_hexagons.append(i)
 
+        if current_player == 1 and 26 in self.highlighted_hexagons:
+            self.highlighted_hexagons.remove(26)
+        if current_player == -1 and 34 in self.highlighted_hexagons:
+            self.highlighted_hexagons.remove(34)
+
     def move_piece(self, new_hexagon_index):
         self.game_draw.board[new_hexagon_index] = self.game_draw.board[self.selected_piece_index]
         self.game_draw.board[self.selected_piece_index] = 0
@@ -100,38 +103,14 @@ class GameLogic:
             return
         self.game_draw.board[hexagon_index] = 1 if color == self.game_draw.colors["BLUE"] else -1
 
-    def game_loop(self):
-        running = True
-        while running:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    running = False
-                elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:  # Left click
-                    clicked_piece_index = self.check_hovered_piece()
-                    if clicked_piece_index is not None:
-                        if self.selected_piece_index is None and self.game_draw.board[clicked_piece_index] != 0:
-                            self.selected_piece_index = clicked_piece_index
-                            self.highlight_possible_moves(clicked_piece_index)
-                        else:
-                            if clicked_piece_index in self.highlighted_hexagons:
-                                self.move_piece(clicked_piece_index)
-                            else:
-                                self.selected_piece_index = None
-                                self.highlighted_hexagons = []
-                    else:
-                        self.selected_piece_index = None
-                        self.highlighted_hexagons = []
-            self.game_draw.screen.fill(self.game_draw.colors["WHITE"])
-            self.game_draw.draw_board()
-            if self.selected_piece_index is not None:
-                x, y = self.game_draw.hexagon_centers[self.selected_piece_index]
-                if self.game_draw.board[self.selected_piece_index] == 1:
-                    pygame.draw.circle(self.game_draw.screen, self.game_draw.colors["DARKBLUE"], (x, y), 20)
-                elif self.game_draw.board[self.selected_piece_index] == -1:
-                    pygame.draw.circle(self.game_draw.screen, self.game_draw.colors["DARKRED"], (x, y), 20)
-            for hexagon_index in self.highlighted_hexagons:
-                x, y = self.game_draw.hexagon_centers[hexagon_index]
-                pygame.draw.circle(self.game_draw.screen, (0, 255, 0), (x, y), 10, width=10)
-            pygame.display.flip()
-        pygame.quit()
-        sys.exit()
+    def highlight(self):
+        if self.selected_piece_index is not None:
+            x, y = self.game_draw.hexagon_centers[self.selected_piece_index]
+            if self.game_draw.board[self.selected_piece_index] == 1:
+                pygame.draw.circle(self.game_draw.screen, self.game_draw.colors["DARKBLUE"], (x, y), 20)
+            elif self.game_draw.board[self.selected_piece_index] == -1:
+                pygame.draw.circle(self.game_draw.screen, self.game_draw.colors["DARKRED"], (x, y), 20)
+
+        for hexagon_index in self.highlighted_hexagons:
+            x, y = self.game_draw.hexagon_centers[hexagon_index]
+            pygame.draw.circle(self.game_draw.screen, (0, 255, 0), (x, y), 10, width=10)
