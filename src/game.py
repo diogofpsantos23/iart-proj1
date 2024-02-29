@@ -25,11 +25,13 @@ class AboyneGame:
                         if self.game_logic.selected_piece_index is None:
                             if self.game_draw.board[clicked_piece_index] == self.current_player:
                                 self.game_logic.selected_piece_index = clicked_piece_index
-                                self.game_logic.highlight_possible_moves(clicked_piece_index, self.current_player)
+                                if not self.game_logic.check_blocked_piece(
+                                        self.game_logic.selected_piece_index):
+                                    self.game_logic.highlight_possible_moves(clicked_piece_index, self.current_player)
                         else:
                             if clicked_piece_index in self.game_logic.highlighted_hexagons:
                                 if (self.current_player == 1 and clicked_piece_index != 26) or \
-                                   (self.current_player == -1 and clicked_piece_index != 34):
+                                        (self.current_player == -1 and clicked_piece_index != 34):
                                     self.game_logic.move_piece(clicked_piece_index)
                                     self.current_player = -self.current_player  # Switch turns after a move
                                 else:

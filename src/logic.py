@@ -92,11 +92,75 @@ class GameLogic:
         if current_player == -1 and 34 in self.highlighted_hexagons:
             self.highlighted_hexagons.remove(34)
 
+        return self.highlighted_hexagons
+
     def move_piece(self, new_hexagon_index):
         self.game_draw.board[new_hexagon_index] = self.game_draw.board[self.selected_piece_index]
         self.game_draw.board[self.selected_piece_index] = 0
         self.selected_piece_index = None
         self.highlighted_hexagons = []
+
+    def check_blocked_piece(self, piece_index):
+        team = self.game_draw.board[piece_index]
+        left_border_indexes = [0, 5, 11, 18, 26, 35, 43, 50, 56]
+        right_border_indexes = [4, 10, 17, 25, 34, 42, 49, 55, 60]
+        piece_row = 0
+        for row in self.board_indexes:
+            if piece_index in row:
+                break
+            else:
+                piece_row += 1
+
+        # Horizontal Moves
+        if piece_index in left_border_indexes:
+            if self.game_draw.board[piece_index + 1] == -team:
+                return True
+        elif piece_index in right_border_indexes:
+            if self.game_draw.board[piece_index - 1] == -team:
+                return True
+        else:
+            if self.game_draw.board[piece_index + 1] == -team:
+                return True
+            if self.game_draw.board[piece_index - 1] == -team:
+                return True
+
+        # Diagonal Moves
+        if piece_row == 0:
+            j = self.board_indexes[0].index(piece_index)
+            for i in self.board_indexes[1][j:j + 2]:
+                if self.game_draw.board[i] == -team:
+                    return True
+        elif 0 < piece_row < 4:
+            j = self.board_indexes[piece_row].index(piece_index)
+            for i in self.board_indexes[piece_row - 1][j - 1:j + 1]:
+                if self.game_draw.board[i] == -team:
+                    return True
+            for i in self.board_indexes[piece_row + 1][j:j + 2]:
+                if self.game_draw.board[i] == -team:
+                    return True
+        elif piece_row == 4:
+            j = self.board_indexes[4].index(piece_index)
+            for i in self.board_indexes[3][j - 1:j + 1]:
+                if self.game_draw.board[i] == -team:
+                    return True
+            for i in self.board_indexes[5][j - 1:j + 1]:
+                if self.game_draw.board[i] == -team:
+                    return True
+        elif 4 < piece_row < 8:
+            j = self.board_indexes[piece_row].index(piece_index)
+            for i in self.board_indexes[piece_row - 1][j:j + 2]:
+                if self.game_draw.board[i] == -team:
+                    return True
+            for i in self.board_indexes[piece_row + 1][j - 1:j + 1]:
+                if self.game_draw.board[i] == -team:
+                    return True
+        else:
+            j = self.board_indexes[8].index(piece_index)
+            for i in self.board_indexes[7][j:j + 2]:
+                if self.game_draw.board[i] == -team:
+                    return True
+
+        return False
 
     def place_piece(self, hexagon_index, color):
         if self.game_draw.board[hexagon_index] != 0:
@@ -114,3 +178,8 @@ class GameLogic:
         for hexagon_index in self.highlighted_hexagons:
             x, y = self.game_draw.hexagon_centers[hexagon_index]
             pygame.draw.circle(self.game_draw.screen, (0, 255, 0), (x, y), 10, width=10)
+
+        for piece_index in range(61):
+            if self.game_draw.board[piece_index] != 0 and self.check_blocked_piece(piece_index):
+                x, y = self.game_draw.hexagon_centers[piece_index]
+                pygame.draw.circle(self.game_draw.screen, self.game_draw.colors["BLACK"], (x, y), 10, width=3)

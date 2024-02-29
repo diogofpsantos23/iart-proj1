@@ -99,7 +99,7 @@ class GameDraw:
 
     def print_player_wins(self, player):
         top_clear_rect = pygame.Rect(0, 0, self.screen_width, 60)
-        pygame.draw.rect(self.screen, (255, 255, 255), top_clear_rect)
+        pygame.draw.rect(self.screen, self.colors["WHITE"], top_clear_rect)
 
         font = pygame.font.Font(None, 48)
         blue_text = font.render("Blue Wins!", True, self.colors["BLUE"])
