@@ -193,6 +193,14 @@ class GameLogic:
         self.highlighted_hexagons = []
         self.adjacent_friendly_pieces = []
         self.adjacent_enemy_pieces = []
+    
+    def undo_move_piece(self, new_hexagon_index):
+        self.game_draw.board[self.selected_piece_index] = self.game_draw.board[new_hexagon_index]
+        self.game_draw.board[new_hexagon_index] = 0
+        self.selected_piece_index = None
+        self.highlighted_hexagons = []
+        self.adjacent_friendly_pieces = []
+        self.adjacent_enemy_pieces = []
 
     def check_blocked_piece(self, piece_index):
         team = self.game_draw.board[piece_index]
@@ -290,3 +298,55 @@ class GameLogic:
             if self.game_draw.board[piece_index] != 0 and self.check_blocked_piece(piece_index):
                 x, y = self.game_draw.hexagon_centers[piece_index]
                 pygame.draw.circle(self.game_draw.screen, self.game_draw.colors["BLACK"], (x, y), 10, width=3)
+    
+    def evaluate_position(self):
+        return self.game_draw.board.count(1) - self.game_draw.board.count(-1)
+    
+    def get_possible_moves(self):
+        moves = []
+        for i in range(61):
+            if self.game_draw.board[i] == 1:
+                moves += self.check_possible_captures(i, 1)
+        return moves
+    
+    def game_over(self):
+        blue_pieces, red_pieces = self.count_blocked_pieces()
+        if blue_pieces == 10 or red_pieces == 10:
+            return True
+        return False
+
+    def minmax(self, depth, alpha, beta, maximizing_player):
+        if depth == 0 or self.game_over():
+            print(f"Depth: {depth}, Game Over: {self.game_over()}, Evaluation: {self.evaluate_position()}")
+            return self.evaluate_position(), None
+
+        if maximizing_player == 1:
+            max_eval = float('-inf')
+            best_move = None
+            for move in self.get_possible_moves():
+                self.move_piece(move)
+                eval, _ = self.minmax(depth - 1, alpha, beta, -maximizing_player)
+                self.undo_move_piece(move)
+                if eval > max_eval:
+                    max_eval = eval
+                    best_move = move
+                alpha = max(alpha, eval)
+                print(f"Maximizing, Depth: {depth}, Move: {move}, Eval: {eval}, Max Eval: {max_eval}, Alpha: {alpha}, Beta: {beta}")
+                if beta <= alpha:
+                    break
+            return max_eval, best_move
+        else:
+            min_eval = float('inf')
+            best_move = None
+            for move in self.get_possible_moves():
+                self.move_piece(move)
+                eval, _ = self.minmax(depth - 1, alpha, beta, -maximizing_player)
+                self.undo_move_piece(move)
+                if eval < min_eval:
+                    min_eval = eval
+                    best_move = move
+                beta = min(beta, eval)
+                print(f"Minimizing, Depth: {depth}, Move: {move}, Eval: {eval}, Min Eval: {min_eval}, Alpha: {alpha}, Beta: {beta}")
+                if beta <= alpha:
+                    break
+            return min_eval, best_move
