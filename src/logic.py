@@ -298,10 +298,7 @@ class GameLogic:
             if self.game_draw.board[piece_index] != 0 and self.check_blocked_piece(piece_index):
                 x, y = self.game_draw.hexagon_centers[piece_index]
                 pygame.draw.circle(self.game_draw.screen, self.game_draw.colors["BLACK"], (x, y), 10, width=3)
-    
-    def evaluate_position(self):
-        return self.game_draw.board.count(1) - self.game_draw.board.count(-1)
-    
+                
     def get_possible_moves(self):
         moves = []
         for i in range(61):
@@ -314,7 +311,12 @@ class GameLogic:
         if blue_pieces == 10 or red_pieces == 10:
             return True
         return False
-
+    def evaluate_position(self):
+        # Assuming 1 represents the maximizing player's pieces and -1 represents the minimizing player's pieces
+        maximizing_player_pieces = sum(1 for i in self.board if i == 1)
+        minimizing_player_pieces = sum(1 for i in self.board if i == -1)
+        return maximizing_player_pieces - minimizing_player_pieces
+    
     def minmax(self, depth, alpha, beta, maximizing_player):
         if depth == 0 or self.game_over():
             print(f"Depth: {depth}, Game Over: {self.game_over()}, Evaluation: {self.evaluate_position()}")

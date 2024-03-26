@@ -96,7 +96,7 @@ class AboyneGame:
                     running = False
                 if self.current_player == -1:
                     # Make a move using the Minimax algorithm
-                    best_score, best_move = self.game_logic.minmax(1, float('-inf'), float('inf'), self.current_player)
+                    best_score, best_move = self.game_logic.minmax(0, float('-inf'), float('inf'), self.current_player)
                     # Use best_score and best_move as needed
                     if best_move is None:
                         continue
