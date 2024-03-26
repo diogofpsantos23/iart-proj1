@@ -311,18 +311,18 @@ class GameLogic:
         if blue_pieces == 10 or red_pieces == 10:
             return True
         return False
-    def evaluate_position(self):
-        # Assuming 1 represents the maximizing player's pieces and -1 represents the minimizing player's pieces
-        maximizing_player_pieces = sum(1 for i in self.board if i == 1)
-        minimizing_player_pieces = sum(1 for i in self.board if i == -1)
-        return maximizing_player_pieces - minimizing_player_pieces
     
+    def evaluate_position(self):
+        maximizing_player_pieces = sum(1 for i in self.game_draw.board if i == -1)
+        minimizing_player_pieces = sum(1 for i in self.game_draw.board if i == 1)
+        return maximizing_player_pieces - minimizing_player_pieces
+
     def minmax(self, depth, alpha, beta, maximizing_player):
         if depth == 0 or self.game_over():
             print(f"Depth: {depth}, Game Over: {self.game_over()}, Evaluation: {self.evaluate_position()}")
             return self.evaluate_position(), None
 
-        if maximizing_player == 1:
+        if maximizing_player == 1:  # Modified line
             max_eval = float('-inf')
             best_move = None
             for move in self.get_possible_moves():
