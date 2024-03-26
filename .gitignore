@@ -1,5 +1,5 @@
 .vs/
-.iartproj1_env/
+.idea/
 .venv/
 __pycache__/
 src/__pycache__/
