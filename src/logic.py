@@ -1,5 +1,3 @@
-import random
-
 import pygame
 
 
@@ -21,6 +19,11 @@ class GameLogic:
         self.highlighted_hexagons = []
         self.adjacent_friendly_pieces = []
         self.adjacent_enemy_pieces = []
+
+    def reset_board(self):
+        self.game_draw.board = [1, 0, 0, 0, -1, 1, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0, 0, -1, 0, 1,
+                                0, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, -1,
+                                1, 0, 0, 0, -1]
 
     def check_hovered_piece(self):
         mouse_pos = pygame.mouse.get_pos()
@@ -84,6 +87,12 @@ class GameLogic:
                     self.highlighted_hexagons.append(i)
                 elif self.game_draw.board[i] == current_player:
                     self.adjacent_friendly_pieces.append(i)
+            if len(self.board_indexes[piece_row - 1][j - 1:j + 1]) == 0:
+                for i in self.board_indexes[piece_row - 1][j:j + 1]:
+                    if self.game_draw.board[i] == 0:
+                        self.highlighted_hexagons.append(i)
+                    elif self.game_draw.board[i] == current_player:
+                        self.adjacent_friendly_pieces.append(i)
         elif piece_row == 4:
             j = self.board_indexes[4].index(piece_index)
             for i in self.board_indexes[3][j - 1:j + 1]:
@@ -108,6 +117,12 @@ class GameLogic:
                     self.highlighted_hexagons.append(i)
                 elif self.game_draw.board[i] == current_player:
                     self.adjacent_friendly_pieces.append(i)
+            if len(self.board_indexes[piece_row + 1][j - 1:j + 1]) == 0:
+                for i in self.board_indexes[piece_row + 1][j:j + 1]:
+                    if self.game_draw.board[i] == 0:
+                        self.highlighted_hexagons.append(i)
+                    elif self.game_draw.board[i] == current_player:
+                        self.adjacent_friendly_pieces.append(i)
         else:
             j = self.board_indexes[8].index(piece_index)
             for i in self.board_indexes[7][j:j + 2]:
@@ -164,6 +179,10 @@ class GameLogic:
             for i in self.board_indexes[piece_row + 1][j:j + 2]:
                 if self.game_draw.board[i] == -current_player:
                     self.adjacent_enemy_pieces.append(i)
+            if len(self.board_indexes[piece_row - 1][j - 1:j + 1]) == 0:
+                for i in self.board_indexes[piece_row - 1][j:j + 1]:
+                    if self.game_draw.board[i] == -current_player:
+                        self.adjacent_enemy_pieces.append(i)
         elif piece_row == 4:
             j = self.board_indexes[4].index(piece_index)
             for i in self.board_indexes[3][j - 1:j + 1]:
@@ -180,6 +199,10 @@ class GameLogic:
             for i in self.board_indexes[piece_row + 1][j - 1:j + 1]:
                 if self.game_draw.board[i] == -current_player:
                     self.adjacent_enemy_pieces.append(i)
+            if len(self.board_indexes[piece_row + 1][j - 1:j + 1]) == 0:
+                for i in self.board_indexes[piece_row + 1][j:j + 1]:
+                    if self.game_draw.board[i] == -current_player:
+                        self.adjacent_enemy_pieces.append(i)
         else:
             j = self.board_indexes[8].index(piece_index)
             for i in self.board_indexes[7][j:j + 2]:
@@ -234,6 +257,10 @@ class GameLogic:
             for i in self.board_indexes[piece_row + 1][j:j + 2]:
                 if self.game_draw.board[i] == -team:
                     return True
+            if len(self.board_indexes[piece_row - 1][j - 1:j + 1]) == 0:
+                for i in self.board_indexes[piece_row - 1][j:j + 1]:
+                    if self.game_draw.board[i] == -team:
+                        return True
         elif piece_row == 4:
             j = self.board_indexes[4].index(piece_index)
             for i in self.board_indexes[3][j - 1:j + 1]:
@@ -250,6 +277,10 @@ class GameLogic:
             for i in self.board_indexes[piece_row + 1][j - 1:j + 1]:
                 if self.game_draw.board[i] == -team:
                     return True
+            if len(self.board_indexes[piece_row + 1][j - 1:j + 1]) == 0:
+                for i in self.board_indexes[piece_row + 1][j:j + 1]:
+                    if self.game_draw.board[i] == -team:
+                        return True
         else:
             j = self.board_indexes[8].index(piece_index)
             for i in self.board_indexes[7][j:j + 2]:
@@ -301,19 +332,86 @@ class GameLogic:
                     moves.append((i, j))
         return moves
 
+    def piece_distance_to_goal(self, piece_index, player):
+        global horizontal_gap, vertical_gap, goal_cell
+        left_border_indexes = [0, 5, 11, 18, 26, 35, 43, 50, 56]
+        right_border_indexes = [4, 10, 17, 25, 34, 42, 49, 55, 60]
+        if player == 1:
+            goal_cell = 34
+            for left, right in zip(left_border_indexes, right_border_indexes):
+                if left <= piece_index <= right:
+                    horizontal_gap = abs(piece_index - right)
+                    vertical_gap = abs(4 - left_border_indexes.index(right))
+                    break
+        else:
+            goal_cell = 26
+            for left, right in zip(left_border_indexes, right_border_indexes):
+                if left <= piece_index <= right:
+                    horizontal_gap = abs(piece_index - left)
+                    vertical_gap = abs(4 - left_border_indexes.index(left))
+                    break
+        return horizontal_gap + vertical_gap
+
+    def piece_distance_to_mid_lane(self, piece_index):
+        global horizontal_gap, vertical_gap, goal_cell
+        left_border_indexes = [0, 5, 11, 18, 26, 35, 43, 50, 56]
+        right_border_indexes = [4, 10, 17, 25, 34, 42, 49, 55, 60]
+        goal_cell = 26
+        for left, right in zip(left_border_indexes, right_border_indexes):
+            if left <= piece_index <= right:
+                vertical_gap = abs(4 - left_border_indexes.index(left))
+                break
+        return vertical_gap
+
+    # Heuristic 1: Returns the difference between red and blue pieces, prioritizing capture moves
     def evaluate_f1(self, player):
         if player == 1:
             return sum(self.game_draw.board)
         else:
             return -sum(self.game_draw.board)
 
-    def pick_random_move(self, player):
-        return random.choice(self.get_possible_moves(player))
+    # Heuristic 2: Factors in the total distance of all pieces to the goal cell, making them get closer to it
+    def evaluate_f2(self, player):
+        if player == 1:
+            total_distance_to_goal = 0
+            for i in range(61):
+                if self.game_draw.board[i] == 1:
+                    total_distance_to_goal += self.piece_distance_to_goal(i, player)
+        else:
+            total_distance_to_goal = 0
+            for i in range(61):
+                if self.game_draw.board[i] == -1:
+                    total_distance_to_goal += self.piece_distance_to_goal(i, player)
+        return self.evaluate_f1(player) * 1000 + (1 / total_distance_to_goal + 1) * 1000
+
+    # Heuristic 3: If a move to the goal cell is possible, it's executed
+    def evaluate_f3(self, player):
+        if player == 1:
+            if self.game_draw.board[34] == 1:
+                return 100000 + self.evaluate_f2(1)
+            return self.evaluate_f2(1)
+        else:
+            if self.game_draw.board[26] == -1:
+                return 100000 + self.evaluate_f2(-1)
+            return self.evaluate_f2(-1)
+
+    # Heuristic 4: Factors in the total distance of all pieces to the middle row of the board, making them get closer to it
+    def evaluate_f4(self, player):
+        total_distance_to_mid_lane = 0
+        if player == 1:
+            for i in range(61):
+                if self.game_draw.board[i] == 1:
+                    total_distance_to_mid_lane += self.piece_distance_to_mid_lane(i)
+        else:
+            for i in range(61):
+                if self.game_draw.board[i] == -1:
+                    total_distance_to_mid_lane += self.piece_distance_to_mid_lane(i)
+        return (1 / total_distance_to_mid_lane + 1) * 100 + self.evaluate_f3(player)
 
     def minimax(self, depth, alpha, beta, maximizing_player):
         if depth == 0:
             if len(self.get_possible_moves(maximizing_player)) == 0: return 0, None
-            return self.evaluate_f1(maximizing_player), None
+            return self.evaluate_f4(maximizing_player), None
 
         if maximizing_player:
             max_eval = float('-inf')
@@ -327,7 +425,7 @@ class GameLogic:
                     max_eval = eval
                     best_move = piece_index, new_index
                 alpha = max(alpha, eval)
-                print(f"Maximizing, Depth: {depth}, Move: {piece_index, new_index}, Eval: {eval}, Max Eval: {max_eval}, Alpha: {alpha}, Beta: {beta}")
+                # print(f"Maximizing, Depth: {depth}, Move: {piece_index, new_index}, Eval: {eval:.2f}, Max Eval: {max_eval:.2f}, Alpha: {alpha:.2f}, Beta: {beta:.2f}")
                 if alpha >= beta:
                     break
             return max_eval, best_move
@@ -343,7 +441,7 @@ class GameLogic:
                     min_eval = eval
                     best_move = piece_index, new_index
                 beta = min(beta, eval)
-                print(f"Minimizing, Depth: {depth}, Move: {piece_index, new_index}, Eval: {eval}, Min Eval: {min_eval}, Alpha: {alpha}, Beta: {beta}")
+                # print(f"Minimizing, Depth: {depth}, Move: {piece_index, new_index}, Eval: {eval:.2f}, Min Eval: {min_eval:.2f}, Alpha: {alpha:.2f}, Beta: {beta:.2f}")
                 if alpha >= beta:
                     break
             return min_eval, best_move

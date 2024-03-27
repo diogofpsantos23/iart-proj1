@@ -27,6 +27,62 @@ class GameDraw:
         self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
         pygame.display.set_caption("Aboyne")
 
+    def print_menu(self):
+        font = pygame.font.Font(None, 36)
+        title_font = pygame.font.Font(None, 128)
+
+        title_text = title_font.render("ABOYNE", True, self.colors["BLACK"])
+        title_rect = title_text.get_rect()
+        title_rect.center = (self.screen.get_width() // 2, 250)
+
+        text1 = font.render("1. Human vs Human", True, self.colors["DARKRED"])
+        text2 = font.render("2. Human vs Computer", True, self.colors["DARKRED"])
+        text3 = font.render("3. Computer vs Computer", True, self.colors["DARKRED"])
+
+        text_rect1 = text1.get_rect()
+        text_rect2 = text2.get_rect()
+        text_rect3 = text3.get_rect()
+
+        text_rect1.center = (self.screen.get_width() // 2, self.screen.get_height() // 2)
+        text_rect2.center = (self.screen.get_width() // 2, self.screen.get_height() // 2 + 40)
+        text_rect3.center = (self.screen.get_width() // 2, self.screen.get_height() // 2 + 80)
+
+        self.screen.blit(text1, text_rect1)
+        self.screen.blit(text2, text_rect2)
+        self.screen.blit(text3, text_rect3)
+        self.screen.blit(title_text, title_rect)
+
+    def print_menu_difficulty(self):
+        font = pygame.font.Font(None, 36)
+        title_font = pygame.font.Font(None, 128)
+        difficulty_font = pygame.font.Font(None, 64)
+
+        title_text = title_font.render("ABOYNE", True, self.colors["BLACK"])
+        title_rect = title_text.get_rect()
+        title_rect.center = (self.screen.get_width() // 2, 210)
+
+        difficulty_text = difficulty_font.render("Difficulty:", True, self.colors["DARKBLUE"])
+        difficulty_rect = difficulty_text.get_rect()
+        difficulty_rect.center = (self.screen.get_width() // 2, 320)
+
+        text1 = font.render("1. Easy", True, self.colors["DARKRED"])
+        text2 = font.render("2. Medium", True, self.colors["DARKRED"])
+        text3 = font.render("3. Hard", True, self.colors["DARKRED"])
+
+        text_rect1 = text1.get_rect()
+        text_rect2 = text2.get_rect()
+        text_rect3 = text3.get_rect()
+
+        text_rect1.center = (self.screen.get_width() // 2, self.screen.get_height() // 2 + 20)
+        text_rect2.center = (self.screen.get_width() // 2, self.screen.get_height() // 2 + 60)
+        text_rect3.center = (self.screen.get_width() // 2, self.screen.get_height() // 2 + 100)
+
+        self.screen.blit(text1, text_rect1)
+        self.screen.blit(text2, text_rect2)
+        self.screen.blit(text3, text_rect3)
+        self.screen.blit(title_text, title_rect)
+        self.screen.blit(difficulty_text, difficulty_rect)
+
     def draw_hexagon(self, x, y):
         points = []
         center = (x, y)
