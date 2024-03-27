@@ -96,15 +96,10 @@ class AboyneGame:
                 if event.type == pygame.QUIT:
                     running = False
                 if self.current_player == -1:
-                    copy_board = tuple(self.game_draw.board)
                     best_score, best_move = self.game_logic.minimax(1, float('-inf'), float('inf'), self.current_player)
-                    print(self.game_draw.board)
-                    print(copy_board)
-                    # print(best_score, best_move)
                     if best_move is None:
                         self.current_player = -self.current_player
                         continue
-                    self.game_draw.board = list(copy_board)
                     self.game_logic.move_piece(best_move[0], best_move[1])
                     self.current_player = -self.current_player  # Switch turns after a move
                 else:

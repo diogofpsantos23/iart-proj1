@@ -1,4 +1,4 @@
-import time
+import random
 
 import pygame
 
@@ -196,14 +196,6 @@ class GameLogic:
         self.adjacent_friendly_pieces = []
         self.adjacent_enemy_pieces = []
 
-    def undo_move_piece(self, current_index, new_hexagon_index):
-        self.game_draw.board[current_index] = self.game_draw.board[new_hexagon_index]
-        self.game_draw.board[new_hexagon_index] = 0
-        self.selected_piece_index = None
-        self.highlighted_hexagons = []
-        self.adjacent_friendly_pieces = []
-        self.adjacent_enemy_pieces = []
-
     def check_blocked_piece(self, piece_index):
         team = self.game_draw.board[piece_index]
         left_border_indexes = [0, 5, 11, 18, 26, 35, 43, 50, 56]
@@ -309,30 +301,33 @@ class GameLogic:
                     moves.append((i, j))
         return moves
 
-    def evaluate_f1(self):
-        maximizing_player_pieces = sum(1 for i in self.game_draw.board if i == -1)
-        minimizing_player_pieces = sum(1 for i in self.game_draw.board if i == 1)
-        return maximizing_player_pieces - minimizing_player_pieces
+    def evaluate_f1(self, player):
+        if player == 1:
+            return sum(self.game_draw.board)
+        else:
+            return -sum(self.game_draw.board)
+
+    def pick_random_move(self, player):
+        return random.choice(self.get_possible_moves(player))
 
     def minimax(self, depth, alpha, beta, maximizing_player):
         if depth == 0:
             if len(self.get_possible_moves(maximizing_player)) == 0: return 0, None
-            max_tuple = max(self.get_possible_moves(maximizing_player), key=lambda x: x[0])
-            return max_tuple[0], max_tuple
+            return self.evaluate_f1(maximizing_player), None
 
         if maximizing_player:
             max_eval = float('-inf')
             best_move = None
             for (piece_index, new_index) in self.get_possible_moves(maximizing_player):
+                copy_board = tuple(self.game_draw.board)
                 self.move_piece(piece_index, new_index)
                 eval, _ = self.minimax(depth - 1, alpha, beta, -1)
-                # print(f"move=({piece_index}, {new_index}), eval={eval}")
-                # self.undo_move_piece(piece_index, new_index)
+                self.game_draw.board = list(copy_board)
                 if eval > max_eval:
                     max_eval = eval
                     best_move = piece_index, new_index
                 alpha = max(alpha, eval)
-                # print(f"Maximizing, Depth: {depth}, Move: {piece_index, new_index}, Eval: {eval}, Max Eval: {max_eval}, Alpha: {alpha}, Beta: {beta}")
+                print(f"Maximizing, Depth: {depth}, Move: {piece_index, new_index}, Eval: {eval}, Max Eval: {max_eval}, Alpha: {alpha}, Beta: {beta}")
                 if alpha >= beta:
                     break
             return max_eval, best_move
@@ -340,14 +335,15 @@ class GameLogic:
             min_eval = float('inf')
             best_move = None
             for (piece_index, new_index) in self.get_possible_moves(maximizing_player):
+                copy_board = tuple(self.game_draw.board)
                 self.move_piece(piece_index, new_index)
-                eval, _ = self.minimax(depth - 1, alpha, beta, 1)
-                self.undo_move_piece(piece_index, new_index)
+                eval, _ = self.minimax(depth - 1, alpha, beta, -1)
+                self.game_draw.board = list(copy_board)
                 if eval < min_eval:
                     min_eval = eval
                     best_move = piece_index, new_index
                 beta = min(beta, eval)
-                # print(f"Minimizing, Depth: {depth}, Move: {piece_index, new_index}, Eval: {eval}, Min Eval: {min_eval}, Alpha: {alpha}, Beta: {beta}")
+                print(f"Minimizing, Depth: {depth}, Move: {piece_index, new_index}, Eval: {eval}, Min Eval: {min_eval}, Alpha: {alpha}, Beta: {beta}")
                 if alpha >= beta:
                     break
             return min_eval, best_move
