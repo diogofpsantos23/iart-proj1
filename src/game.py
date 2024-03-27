@@ -32,7 +32,7 @@ class AboyneGame:
                             if clicked_piece_index in self.game_logic.highlighted_hexagons:
                                 if (self.current_player == 1 and clicked_piece_index != 26) or \
                                         (self.current_player == -1 and clicked_piece_index != 34):
-                                    self.game_logic.move_piece(clicked_piece_index)
+                                    self.game_logic.move_piece(self.game_logic.selected_piece_index, clicked_piece_index)
                                     self.current_player = -self.current_player  # Switch turns after a move
                             else:
                                 self.game_logic.selected_piece_index = None
@@ -88,6 +88,7 @@ class AboyneGame:
                     running = False
         pygame.quit()
         sys.exit()
+
     def play_human_vs_computer(self):
         running = True
         while running:
@@ -95,13 +96,18 @@ class AboyneGame:
                 if event.type == pygame.QUIT:
                     running = False
                 if self.current_player == -1:
-                    # Make a move using the Minimax algorithm
-                    best_score, best_move = self.game_logic.minmax(1, float('-inf'), float('inf'), self.current_player)
-                    # Use best_score and best_move as needed
+                    copy_board = tuple(self.game_draw.board)
+                    best_score, best_move = self.game_logic.minimax(1, float('-inf'), float('inf'), self.current_player)
+                    print(self.game_draw.board)
+                    print(copy_board)
+                    # print(best_score, best_move)
                     if best_move is None:
+                        self.current_player = -self.current_player
                         continue
+                    self.game_draw.board = list(copy_board)
+                    self.game_logic.move_piece(best_move[0], best_move[1])
                     self.current_player = -self.current_player  # Switch turns after a move
-                else :
+                else:
                     if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:  # Left click
                         clicked_piece_index = self.game_logic.check_hovered_piece()
                         if clicked_piece_index is not None:
@@ -115,7 +121,7 @@ class AboyneGame:
                                 if clicked_piece_index in self.game_logic.highlighted_hexagons:
                                     if (self.current_player == 1 and clicked_piece_index != 26) or \
                                             (self.current_player == -1 and clicked_piece_index != 34):
-                                        self.game_logic.move_piece(clicked_piece_index)
+                                        self.game_logic.move_piece(self.game_logic.selected_piece_index, clicked_piece_index)
                                         self.current_player = -self.current_player  # Switch turns after a move
                                 else:
                                     self.game_logic.selected_piece_index = None
@@ -123,7 +129,7 @@ class AboyneGame:
                         else:
                             self.game_logic.selected_piece_index = None
                             self.game_logic.highlighted_hexagons = []
-            
+
             self.game_draw.screen.fill(self.game_draw.colors["WHITE"])
             self.game_draw.draw_board()
             self.game_logic.highlight()
@@ -171,5 +177,3 @@ class AboyneGame:
                     running = False
         pygame.quit()
         sys.exit()
-
-
