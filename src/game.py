@@ -25,8 +25,8 @@ class AboyneGame:
                         self.play_human_vs_human()
                     elif event.key == pygame.K_2:
                         self.menu_difficulty(1)
-                    # elif event.key == pygame.K_3:
-                        # self.menu_difficulty(2)
+                    elif event.key == pygame.K_3:
+                        self.menu_difficulty(2)
 
             self.game_draw.screen.fill(self.game_draw.colors["WHITE"])
             self.game_draw.print_menu()
@@ -52,14 +52,14 @@ class AboyneGame:
                         elif event.key == pygame.K_3:
                             self.play_human_vs_computer(3)
 
-                """elif mode == 2:
+                elif mode == 2:
                     if event.type == pygame.KEYDOWN:
                         if event.key == pygame.K_1:
-                            self.play_computer_vs_computer(3)
+                            self.play_computer_vs_computer(1)
                         elif event.key == pygame.K_2:
-                            self.play_computer_vs_computer(6)
+                            self.play_computer_vs_computer(2)
                         elif event.key == pygame.K_3:
-                            self.play_computer_vs_computer(9)"""
+                            self.play_computer_vs_computer(3)
 
             self.game_draw.screen.fill(self.game_draw.colors["WHITE"])
             self.game_draw.print_menu_difficulty()
@@ -234,5 +234,10 @@ class AboyneGame:
                     pygame.display.flip()
                     time.sleep(3)
                     running = False
+        pygame.quit()
+        sys.exit()
+
+    def play_computer_vs_computer(self, minimax_depth):
+        # TODO
         pygame.quit()
         sys.exit()

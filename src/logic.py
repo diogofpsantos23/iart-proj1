@@ -372,46 +372,43 @@ class GameLogic:
 
     # Heuristic 2: Factors in the total distance of all pieces to the goal cell, making them get closer to it
     def evaluate_f2(self, player):
-        if player == 1:
-            total_distance_to_goal = 0
-            for i in range(61):
-                if self.game_draw.board[i] == 1:
-                    total_distance_to_goal += self.piece_distance_to_goal(i, player)
-        else:
-            total_distance_to_goal = 0
-            for i in range(61):
-                if self.game_draw.board[i] == -1:
-                    total_distance_to_goal += self.piece_distance_to_goal(i, player)
-        return self.evaluate_f1(player) * 1000 + (1 / total_distance_to_goal + 1) * 1000
+        total_distance_to_goal = 0
+        for i in range(61):
+            if self.game_draw.board[i] == player:
+                total_distance_to_goal += self.piece_distance_to_goal(i, player)
+        return self.evaluate_f1(player) * 1000 + (1 / (total_distance_to_goal + 1)) * 1000
 
     # Heuristic 3: If a move to the goal cell is possible, it's executed
     def evaluate_f3(self, player):
         if player == 1:
             if self.game_draw.board[34] == 1:
                 return 100000 + self.evaluate_f2(1)
-            return self.evaluate_f2(1)
         else:
             if self.game_draw.board[26] == -1:
                 return 100000 + self.evaluate_f2(-1)
-            return self.evaluate_f2(-1)
+        return self.evaluate_f2(player)
 
     # Heuristic 4: Factors in the total distance of all pieces to the middle row of the board, making them get closer to it
     def evaluate_f4(self, player):
         total_distance_to_mid_lane = 0
-        if player == 1:
-            for i in range(61):
-                if self.game_draw.board[i] == 1:
-                    total_distance_to_mid_lane += self.piece_distance_to_mid_lane(i)
-        else:
-            for i in range(61):
-                if self.game_draw.board[i] == -1:
-                    total_distance_to_mid_lane += self.piece_distance_to_mid_lane(i)
-        return (1 / total_distance_to_mid_lane + 1) * 100 + self.evaluate_f3(player)
+        for i in range(61):
+            if self.game_draw.board[i] == player:
+                total_distance_to_mid_lane += self.piece_distance_to_mid_lane(i)
+        return (1 / (total_distance_to_mid_lane + 1)) * 100 + self.evaluate_f3(player)
+
+    # Heuristic 5: Factors in the total possible capture moves the enemy player has available
+    def evaluate_f5(self, player):
+        total_enemy_possible_captures = 0
+        for i in range(61):
+            if self.game_draw.board[i] == -player:
+                total_enemy_possible_captures += len(self.check_possible_captures(i, -player))
+        return self.evaluate_f4(player) / (total_enemy_possible_captures+1)
 
     def minimax(self, depth, alpha, beta, maximizing_player):
         if depth == 0:
-            if len(self.get_possible_moves(maximizing_player)) == 0: return 0, None
-            return self.evaluate_f4(maximizing_player), None
+            if len(self.get_possible_moves(maximizing_player)) == 0:
+                return 0, None
+            return self.evaluate_f5(maximizing_player), None
 
         if maximizing_player:
             max_eval = float('-inf')
