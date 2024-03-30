@@ -341,7 +341,7 @@ class GameLogic:
             for left, right in zip(left_border_indexes, right_border_indexes):
                 if left <= piece_index <= right:
                     horizontal_gap = abs(piece_index - right)
-                    vertical_gap = abs(4 - left_border_indexes.index(right))
+                    vertical_gap = abs(4 - left_border_indexes.index(left))
                     break
         else:
             goal_cell = 26
@@ -378,67 +378,71 @@ class GameLogic:
                 total_distance_to_goal += self.piece_distance_to_goal(i, player)
         return self.evaluate_f1(player) * 1000 + (1 / (total_distance_to_goal + 1)) * 1000
 
-    # Heuristic 3: If a move to the goal cell is possible, it's executed
+    # Heuristic 3: Factors in the total distance of all pieces to the middle row of the board, making them get closer to it
     def evaluate_f3(self, player):
-        if player == 1:
-            if self.game_draw.board[34] == 1:
-                return 100000 + self.evaluate_f2(1)
-        else:
-            if self.game_draw.board[26] == -1:
-                return 100000 + self.evaluate_f2(-1)
-        return self.evaluate_f2(player)
-
-    # Heuristic 4: Factors in the total distance of all pieces to the middle row of the board, making them get closer to it
-    def evaluate_f4(self, player):
         total_distance_to_mid_lane = 0
         for i in range(61):
             if self.game_draw.board[i] == player:
                 total_distance_to_mid_lane += self.piece_distance_to_mid_lane(i)
-        return (1 / (total_distance_to_mid_lane + 1)) * 100 + self.evaluate_f3(player)
+        return (1 / (total_distance_to_mid_lane + 1)) * 100 + self.evaluate_f2(player)
 
-    # Heuristic 5: Factors in the total possible capture moves the enemy player has available
-    def evaluate_f5(self, player):
+    # Heuristic 4: Factors in the total possible capture moves the enemy player has available
+    def evaluate_f4(self, player):
         total_enemy_possible_captures = 0
         for i in range(61):
             if self.game_draw.board[i] == -player:
                 total_enemy_possible_captures += len(self.check_possible_captures(i, -player))
-        return self.evaluate_f4(player) / (total_enemy_possible_captures+1)
+        return self.evaluate_f3(player) / (total_enemy_possible_captures + 1)
 
-    def minimax(self, depth, alpha, beta, maximizing_player):
+    # Heuristic 5: If a move to the goal cell is possible, it's executed
+    def evaluate_f5(self, player):
+        if player == 1:
+            if self.game_draw.board[34] == 1:
+                return 1000000 + self.evaluate_f4(1)
+        else:
+            if self.game_draw.board[26] == -1:
+                return 1000000 + self.evaluate_f4(-1)
+        return self.evaluate_f4(player)
+
+    def minimax(self, depth, alpha, beta, player, maximizing):
         if depth == 0:
-            if len(self.get_possible_moves(maximizing_player)) == 0:
+            if len(self.get_possible_moves(player)) == 0:
                 return 0, None
-            return self.evaluate_f5(maximizing_player), None
+            return self.evaluate_f5(player), None
 
-        if maximizing_player:
+        lol = {True: "Maximizing", False: "Minimizing"}
+        print(f"\n{lol[maximizing]} Player: {player}")
+        print(f"Available moves: {self.get_possible_moves(player)}")
+
+        if maximizing:
             max_eval = float('-inf')
             best_move = None
-            for (piece_index, new_index) in self.get_possible_moves(maximizing_player):
+            for (piece_index, new_index) in self.get_possible_moves(player):
                 copy_board = tuple(self.game_draw.board)
                 self.move_piece(piece_index, new_index)
-                eval, _ = self.minimax(depth - 1, alpha, beta, -1)
+                eval, _ = self.minimax(depth - 1, alpha, beta, -player, False)
                 self.game_draw.board = list(copy_board)
                 if eval > max_eval:
                     max_eval = eval
                     best_move = piece_index, new_index
                 alpha = max(alpha, eval)
-                # print(f"Maximizing, Depth: {depth}, Move: {piece_index, new_index}, Eval: {eval:.2f}, Max Eval: {max_eval:.2f}, Alpha: {alpha:.2f}, Beta: {beta:.2f}")
+                print(f"Maximizing, Depth: {depth}, Move: {piece_index, new_index}, Eval: {eval:.2f}, Max Eval: {max_eval:.2f}, Alpha: {alpha:.2f}, Beta: {beta:.2f}")
                 if alpha >= beta:
                     break
             return max_eval, best_move
         else:
             min_eval = float('inf')
             best_move = None
-            for (piece_index, new_index) in self.get_possible_moves(maximizing_player):
+            for (piece_index, new_index) in self.get_possible_moves(player):
                 copy_board = tuple(self.game_draw.board)
                 self.move_piece(piece_index, new_index)
-                eval, _ = self.minimax(depth - 1, alpha, beta, -1)
+                eval, _ = self.minimax(depth - 1, alpha, beta, -player, True)
                 self.game_draw.board = list(copy_board)
                 if eval < min_eval:
                     min_eval = eval
                     best_move = piece_index, new_index
                 beta = min(beta, eval)
-                # print(f"Minimizing, Depth: {depth}, Move: {piece_index, new_index}, Eval: {eval:.2f}, Min Eval: {min_eval:.2f}, Alpha: {alpha:.2f}, Beta: {beta:.2f}")
+                print(f"Minimizing, Depth: {depth}, Move: {piece_index, new_index}, Eval: {eval:.2f}, Min Eval: {min_eval:.2f}, Alpha: {alpha:.2f}, Beta: {beta:.2f}")
                 if alpha >= beta:
                     break
             return min_eval, best_move
