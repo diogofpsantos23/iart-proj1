@@ -1,5 +1,5 @@
 import pygame
-
+import random
 
 class GameLogic:
     def __init__(self, game_draw):
@@ -412,7 +412,7 @@ class GameLogic:
 
         if maximizing_player:
             max_eval = float('-inf')
-            best_move = None
+            best_moves = []
             for (piece_index, new_index) in self.get_possible_moves(maximizing_player):
                 copy_board = tuple(self.game_draw.board)
                 self.move_piece(piece_index, new_index)
@@ -420,12 +420,13 @@ class GameLogic:
                 self.game_draw.board = list(copy_board)
                 if eval > max_eval:
                     max_eval = eval
-                    best_move = piece_index, new_index
+                    best_moves = [(piece_index, new_index)]
+                elif eval == max_eval:
+                    best_moves.append((piece_index, new_index))
                 alpha = max(alpha, eval)
-                # print(f"Maximizing, Depth: {depth}, Move: {piece_index, new_index}, Eval: {eval:.2f}, Max Eval: {max_eval:.2f}, Alpha: {alpha:.2f}, Beta: {beta:.2f}")
                 if alpha >= beta:
                     break
-            return max_eval, best_move
+            return max_eval, random.choice(best_moves) if best_moves else None
         else:
             min_eval = float('inf')
             best_move = None
@@ -438,7 +439,6 @@ class GameLogic:
                     min_eval = eval
                     best_move = piece_index, new_index
                 beta = min(beta, eval)
-                # print(f"Minimizing, Depth: {depth}, Move: {piece_index, new_index}, Eval: {eval:.2f}, Min Eval: {min_eval:.2f}, Alpha: {alpha:.2f}, Beta: {beta:.2f}")
                 if alpha >= beta:
                     break
             return min_eval, best_move
