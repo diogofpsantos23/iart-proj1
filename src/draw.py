@@ -1,4 +1,5 @@
 import math
+import time
 
 import pygame
 
@@ -13,8 +14,7 @@ class GameDraw:
         self.hex_height = 2 * self.hex_size
         self.hexagon_centers = []
         self.board = [1, 0, 0, 0, -1, 1, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0,
-                      0, 0,
-                      -1, 0, 1, 0, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, -1, 1, 0, 0, 0, -1]
+                      0, 0, -1, 0, 1, 0, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, -1, 1, 0, 0, 0, -1]
         self.colors = {
             "WHITE": (255, 255, 255),
             "BLACK": (0, 0, 0),
@@ -172,3 +172,31 @@ class GameDraw:
         text_width = text.get_width()
         x_coordinate = (self.screen_width - text_width) / 2
         self.screen.blit(text, (x_coordinate, 20))
+
+    def display_results(self, blue_wins, red_wins, draws, n, difficulty):
+        d = {2: 'Easy', 3: 'Medium', 4: 'Hard'}
+
+        self.screen.fill((255, 255, 255))
+
+        font = pygame.font.Font(None, 36)
+        title_font = pygame.font.Font(None, 40)
+
+        title_text = title_font.render(f"Statistics for {n} games", True, self.colors["BLACK"])
+        title_text2 = title_font.render(f"Normal Blue CPU (depth 2) vs {d[difficulty]} Red CPU (depth {difficulty}):", True, self.colors["BLACK"])
+        blue_text = font.render(f"Blue victories: {blue_wins}", True, self.colors["BLUE"])
+        red_text = font.render(f"Red victories: {red_wins}", True, self.colors["RED"])
+        draws_text = font.render(f"Draws: {draws}", True, self.colors["BLACK"])
+
+        title_rect = title_text.get_rect(center=(self.screen_width // 2, self.screen_height // 2 - 120))
+        title_rect2 = title_text2.get_rect(center=(self.screen_width // 2, self.screen_height // 2 - 80))
+        blue_rect = blue_text.get_rect(center=(self.screen_width // 2, self.screen_height // 2 - 20))
+        red_rect = red_text.get_rect(center=(self.screen_width // 2, self.screen_height // 2 + 20))
+        draws_rect = draws_text.get_rect(center=(self.screen_width // 2, self.screen_height // 2 + 60))
+
+        self.screen.blit(blue_text, blue_rect)
+        self.screen.blit(red_text, red_rect)
+        self.screen.blit(draws_text, draws_rect)
+        self.screen.blit(title_text, title_rect)
+        self.screen.blit(title_text2, title_rect2)
+
+        pygame.display.flip()
