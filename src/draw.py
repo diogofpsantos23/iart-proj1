@@ -1,6 +1,5 @@
 import math
 import time
-
 import pygame
 
 
@@ -13,8 +12,15 @@ class GameDraw:
         self.hex_width = self.hex_size * math.sqrt(3)
         self.hex_height = 2 * self.hex_size
         self.hexagon_centers = []
-        self.board = [1, 0, 0, 0, -1, 1, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0,
-                      0, 0, -1, 0, 1, 0, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, -1, 1, 0, 0, 0, -1]
+        self.board = [1, 0, 0, 0, -1,
+                      1, 0, 0, 0, 0, -1,
+                      1, 0, 0, 0, 0, 0, -1,
+                      1, 0, 0, 0, 0, 0, 0, -1,
+                      0, 1, 0, 0, 0, 0, 0, -1, 0,
+                      1, 0, 0, 0, 0, 0, 0, -1,
+                      1, 0, 0, 0, 0, 0, -1,
+                      1, 0, 0, 0, 0, -1,
+                      1, 0, 0, 0, -1]
         self.colors = {
             "WHITE": (255, 255, 255),
             "BLACK": (0, 0, 0),
@@ -27,6 +33,7 @@ class GameDraw:
         self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
         pygame.display.set_caption("Aboyne")
 
+    # This function displays graphically the inital menu of the application
     def print_menu(self):
         font = pygame.font.Font(None, 36)
         title_font = pygame.font.Font(None, 128)
@@ -52,6 +59,7 @@ class GameDraw:
         self.screen.blit(text3, text_rect3)
         self.screen.blit(title_text, title_rect)
 
+    # This function displays graphically the difficulty menu after the user picked one of the following game modes: Human vs CPU or CPU vs CPU
     def print_menu_difficulty(self):
         font = pygame.font.Font(None, 36)
         title_font = pygame.font.Font(None, 128)
@@ -83,6 +91,7 @@ class GameDraw:
         self.screen.blit(title_text, title_rect)
         self.screen.blit(difficulty_text, difficulty_rect)
 
+    # This function displays graphically a single hexagon
     def draw_hexagon(self, x, y):
         points = []
         center = (x, y)
@@ -96,33 +105,33 @@ class GameDraw:
         pygame.draw.polygon(self.screen, self.colors["BEGE"], points)
         pygame.draw.polygon(self.screen, self.colors["BLACK"], points, 3)
 
+    # This function displays graphically a single line of hexagons
     def draw_line_of_hexagons(self, x, y, n):
         for i in range(n):
             x_ = x + i * self.hex_width
             y_ = y
             self.draw_hexagon(x_, y_)
 
+    # This function displays graphically a single piece
     def draw_piece(self, x, y, color):
         pygame.draw.circle(self.screen, color, (x, y), 20)
 
+    # This function displays graphically both blue and red goal cells
     def draw_goal_squares(self):
-        square_size = 20  # Adjust the size as needed
-        half_square_size = square_size // 2  # Calculate half size for positioning
-
-        # Draw red square
+        square_size = 20
+        half_square_size = square_size // 2
         pygame.draw.rect(self.screen, self.colors["RED"],
                          (self.hexagon_centers[26][0] - half_square_size,
                           self.hexagon_centers[26][1] - half_square_size,
                           square_size,
                           square_size))
-
-        # Draw blue square
         pygame.draw.rect(self.screen, self.colors["BLUE"],
                          (self.hexagon_centers[34][0] - half_square_size,
                           self.hexagon_centers[34][1] - half_square_size,
                           square_size,
                           square_size))
 
+    # This function displays graphically the board and all its components
     def draw_board(self):
         for i in range(4, 0, -1):
             self.draw_line_of_hexagons(200 + i * 35, self.screen_height / 2 - i * 60, 9 - i)
@@ -132,6 +141,7 @@ class GameDraw:
         self.draw_all_pieces()
         self.draw_goal_squares()
 
+    # This function displays graphically all the pieces in the board
     def draw_all_pieces(self):
         for i in range(61):
             if self.board[i] == 1:
@@ -143,6 +153,7 @@ class GameDraw:
             elif self.board[i] == -2:
                 self.draw_piece(self.hexagon_centers[i][0], self.hexagon_centers[i][1], self.colors["DARKRED"])
 
+    # This function displays graphically the player who is currently taking their turn
     def print_player_turn(self, current_player, erase=False):
         if erase: return
         font = pygame.font.Font(None, 48)
@@ -153,6 +164,7 @@ class GameDraw:
         else:
             self.screen.blit(red_text, (self.screen.get_width() - red_text.get_width() - 20, 20))
 
+    # This function displays graphically the player who won the game
     def print_player_wins(self, player):
         top_clear_rect = pygame.Rect(0, 0, self.screen_width, 60)
         pygame.draw.rect(self.screen, self.colors["WHITE"], top_clear_rect)
@@ -164,6 +176,7 @@ class GameDraw:
         else:
             self.screen.blit(red_text, (self.screen.get_width() - red_text.get_width() - 20, 20))
 
+    # This function displays graphically "Draw!" in case of a draw
     def print_draw(self):
         top_clear_rect = pygame.Rect(0, 0, self.screen_width, 60)
         pygame.draw.rect(self.screen, self.colors["WHITE"], top_clear_rect)
@@ -173,8 +186,8 @@ class GameDraw:
         x_coordinate = (self.screen_width - text_width) / 2
         self.screen.blit(text, (x_coordinate, 20))
 
-    def display_results(self, blue_wins, red_wins, draws, n, difficulty):
-        d = {1: 'Easy', 2: 'Medium', 3: 'Hard'}
+    # This function displays graphically the statistics obtained after test-running N number of CPU vs CPU games
+    def display_results(self, blue_wins, red_wins, draws, n, d1, d2):
 
         self.screen.fill((255, 255, 255))
 
@@ -182,7 +195,7 @@ class GameDraw:
         title_font = pygame.font.Font(None, 40)
 
         title_text = title_font.render(f"Statistics for {n} games", True, self.colors["BLACK"])
-        title_text2 = title_font.render(f"Normal Blue CPU (depth 2) vs {d[difficulty]} Red CPU (depth {difficulty}):", True, self.colors["BLACK"])
+        title_text2 = title_font.render(f"Blue CPU (depth {d1}) vs Red CPU (depth {d2}):", True, self.colors["BLACK"])
         blue_text = font.render(f"Blue victories: {blue_wins}", True, self.colors["BLUE"])
         red_text = font.render(f"Red victories: {red_wins}", True, self.colors["RED"])
         draws_text = font.render(f"Draws: {draws}", True, self.colors["BLACK"])

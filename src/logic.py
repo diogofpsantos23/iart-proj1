@@ -1,5 +1,4 @@
 import pygame
-
 import random
 
 
@@ -22,11 +21,13 @@ class GameLogic:
         self.adjacent_friendly_pieces = []
         self.adjacent_enemy_pieces = []
 
+    # This function resets the board to its initial state
     def reset_board(self):
         self.game_draw.board = [1, 0, 0, 0, -1, 1, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0, 0, -1, 0, 1,
                                 0, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, -1,
                                 1, 0, 0, 0, -1]
 
+    # This function checks and returns the index of the piece the mouse cursor is currently hovering
     def check_hovered_piece(self):
         mouse_pos = pygame.mouse.get_pos()
         for i, center in enumerate(self.game_draw.hexagon_centers):
@@ -36,6 +37,7 @@ class GameLogic:
                 return i
         return None
 
+    # This function returns the possible moves a player can make with one of its pieces
     def highlight_possible_moves(self, piece_index, current_player):
         self.highlighted_hexagons = []
         self.adjacent_friendly_pieces = []
@@ -143,6 +145,7 @@ class GameLogic:
 
         return self.highlighted_hexagons
 
+    # This function returns the possible capture moves a player can make with one of its pieces
     def check_possible_captures(self, piece_index, current_player):
         self.adjacent_enemy_pieces = []
         left_border_indexes = [0, 5, 11, 18, 26, 35, 43, 50, 56]
@@ -213,6 +216,7 @@ class GameLogic:
 
         return self.adjacent_enemy_pieces
 
+    # This function moves one of the pieces on the board
     def move_piece(self, current_index, new_hexagon_index):
         self.game_draw.board[new_hexagon_index] = self.game_draw.board[current_index]
         self.game_draw.board[current_index] = 0
@@ -221,6 +225,7 @@ class GameLogic:
         self.adjacent_friendly_pieces = []
         self.adjacent_enemy_pieces = []
 
+    # This function checks if a piece is blocked
     def check_blocked_piece(self, piece_index):
         team = self.game_draw.board[piece_index]
         left_border_indexes = [0, 5, 11, 18, 26, 35, 43, 50, 56]
@@ -291,6 +296,7 @@ class GameLogic:
 
         return False
 
+    # This function returns tuple with the total number of blocked blue and red pieces.
     def count_blocked_pieces(self):
         blocked_blue_pieces = 0
         blocked_red_pieces = 0
@@ -301,11 +307,7 @@ class GameLogic:
                 blocked_red_pieces += 1
         return blocked_blue_pieces, blocked_red_pieces
 
-    def place_piece(self, hexagon_index, color):
-        if self.game_draw.board[hexagon_index] != 0:
-            return
-        self.game_draw.board[hexagon_index] = 1 if color == self.game_draw.colors["BLUE"] else -1
-
+    # This function highlights graphically the following: all blocked pieces, currently selected piece and its possible moves, we probably should have reformatted the code and placed it in the GameDraw class
     def highlight(self):
         if self.selected_piece_index is not None:
             x, y = self.game_draw.hexagon_centers[self.selected_piece_index]
@@ -326,6 +328,7 @@ class GameLogic:
                 x, y = self.game_draw.hexagon_centers[piece_index]
                 pygame.draw.circle(self.game_draw.screen, self.game_draw.colors["BLACK"], (x, y), 10, width=3)
 
+    # This function returns all available moves a player can take in its current turn
     def get_possible_moves(self, player):
         moves = []
         for i in range(61):
@@ -334,6 +337,7 @@ class GameLogic:
                     moves.append((i, j))
         return moves
 
+    # This function returns the distance of a player's piece to the goal cell
     def piece_distance_to_goal(self, piece_index, player):
         global horizontal_gap, vertical_gap, goal_cell
         left_border_indexes = [0, 5, 11, 18, 26, 35, 43, 50, 56]
@@ -354,7 +358,7 @@ class GameLogic:
                     break
         return horizontal_gap + vertical_gap
 
-    # Heuristic 1: Gives different scores to a piece's position according to its proximity to the middle lanes
+    # Heuristic 1: Gives different scores to a piece's position according to its proximity to the middle lane
     def evaluate_f1(self, player):
         counter = 0
         for i in range(61):
@@ -377,14 +381,14 @@ class GameLogic:
         for i in range(61):
             if self.game_draw.board[i] == player:
                 counter += self.piece_distance_to_goal(i, player)
-        return self.evaluate_f1(player) - counter*30
+        return self.evaluate_f1(player) - counter * 30
 
     # Heuristic 3: Returns the difference between blue and red pieces, prioritizing capture moves
     def evaluate_f3(self, player):
         if player == 1:
-            return self.evaluate_f2(player) + sum(self.game_draw.board)*200
+            return self.evaluate_f2(player) + sum(self.game_draw.board) * 200
         else:
-            return self.evaluate_f2(player) - sum(self.game_draw.board)*200
+            return self.evaluate_f2(player) - sum(self.game_draw.board) * 200
 
     # Heuristic 4: Returns the difference between possible capture moves
     def evaluate_f4(self, player):
@@ -393,10 +397,12 @@ class GameLogic:
         for i in range(61):
             if not self.check_blocked_piece(i):
                 if self.game_draw.board[i] == player:
-                    ally_possible_captures += len(list(filter(lambda x: self.game_draw.board[x] == -player, self.highlight_possible_moves(i, player))))
+                    ally_possible_captures += len(list(
+                        filter(lambda x: self.game_draw.board[x] == -player, self.highlight_possible_moves(i, player))))
                 elif self.game_draw.board[i] == -player:
-                    enemy_possible_captures += len(list(filter(lambda x: self.game_draw.board[x] == player, self.highlight_possible_moves(i, -player))))
-        return self.evaluate_f3(player) + (ally_possible_captures - enemy_possible_captures)*15
+                    enemy_possible_captures += len(list(
+                        filter(lambda x: self.game_draw.board[x] == player, self.highlight_possible_moves(i, -player))))
+        return self.evaluate_f3(player) + (ally_possible_captures - enemy_possible_captures) * 15
 
     # Heuristic 5: Returns the difference between the number of pieces still able to play
     def evaluate_f5(self, player):
@@ -404,10 +410,9 @@ class GameLogic:
         total_blue, total_red = self.game_draw.board.count(1), self.game_draw.board.count(-1)
         available_blue, available_red = total_blue - blocked_blue, total_red - blocked_red
         if player == 1:
-            return self.evaluate_f4(player) + (available_blue - available_red)*100
+            return self.evaluate_f4(player) + (available_blue - available_red) * 100
         else:
-            return self.evaluate_f4(player) + (available_red - available_blue)*100
-
+            return self.evaluate_f4(player) + (available_red - available_blue) * 100
 
     # Heuristic 6: If a move to the goal cell is possible, it's executed
     def evaluate_f6(self, player):
@@ -422,25 +427,19 @@ class GameLogic:
     # Heuristic 7: Block the other player's winning move
     def evaluate_f7(self, player):
         if player == 1:
-            if self.game_draw.board[18] == -1 and not self.check_blocked_piece(18):
-               if self.game_draw.board[27] == 1 or self.game_draw.board[35] == 1:
-                   return 250 + self.evaluate_f6(1)
-            if self.game_draw.board[27] == -1 and not self.check_blocked_piece(27):
-                if self.game_draw.board[18] == 1 or self.game_draw.board[35] == 1:
-                    return 250 + self.evaluate_f6(1)
-            if self.game_draw.board[35] == -1 and not self.check_blocked_piece(35):
-                if self.game_draw.board[18] == 1 or self.game_draw.board[27] == 1:
-                    return 250 + self.evaluate_f6(1)
+            if self.game_draw.board[18] == -1 and self.check_blocked_piece(18):
+                return 250 + self.evaluate_f6(1)
+            if self.game_draw.board[27] == -1 and self.check_blocked_piece(27):
+                return 250 + self.evaluate_f6(1)
+            if self.game_draw.board[35] == -1 and self.check_blocked_piece(35):
+                return 250 + self.evaluate_f6(1)
         else:
-            if self.game_draw.board[25] == 1 and not self.check_blocked_piece(25):
-                if self.game_draw.board[33] == -1 or self.game_draw.board[42] == -1:
-                    return 250 + self.evaluate_f6(-1)
-            if self.game_draw.board[33] == 1 and not self.check_blocked_piece(33):
-                if self.game_draw.board[27] == -1 or self.game_draw.board[42] == -1:
-                    return 250 + self.evaluate_f6(-1)
-            if self.game_draw.board[42] == 1 and not self.check_blocked_piece(42):
-                if self.game_draw.board[27] == -1 or self.game_draw.board[35] == -1:
-                    return 250 + self.evaluate_f6(-1)
+            if self.game_draw.board[25] == 1 and self.check_blocked_piece(25):
+                return 250 + self.evaluate_f6(-1)
+            if self.game_draw.board[33] == 1 and self.check_blocked_piece(33):
+                return 250 + self.evaluate_f6(-1)
+            if self.game_draw.board[42] == 1 and self.check_blocked_piece(42):
+                return 250 + self.evaluate_f6(-1)
         return self.evaluate_f6(player)
 
     # Heuristic 8: If the other player has no available moves, just find the path to the goal cell
@@ -449,8 +448,10 @@ class GameLogic:
             return self.evaluate_f2(player)
         return self.evaluate_f7(player)
 
+    # Minimax Algorithm with Alpha-Beta Pruning
     def minimax(self, depth, alpha, beta, player, maximizing):
-        if (depth == 0) or (len(self.get_possible_moves(player)) == 0 and maximizing) or (len(self.get_possible_moves(-player)) == 0 and not maximizing):
+        if ((depth == 0) or (len(self.get_possible_moves(player)) == 0 and maximizing)
+                or (len(self.get_possible_moves(-player)) == 0 and not maximizing)):
             return self.evaluate_f8(player), None
 
         if maximizing:
@@ -468,7 +469,8 @@ class GameLogic:
                     max_eval = eval
                     best_move = piece_index, new_index
                 alpha = max(alpha, eval)
-                # print(f"Maximizing Player {player}, Depth: {depth}, Move: {piece_index, new_index}, Eval: {eval:.2f}, Max Eval: {max_eval:.2f}, Alpha: {alpha:.2f}, Beta: {beta:.2f}")
+                # print(f"Maximizing Player {player}, Depth: {depth}, Move: {piece_index, new_index},
+                # Eval: {eval:.2f}, Max Eval: {max_eval:.2f}, Alpha: {alpha:.2f}, Beta: {beta:.2f}")
                 if alpha >= beta:
                     break
             return max_eval, best_move
@@ -487,7 +489,8 @@ class GameLogic:
                     min_eval = eval
                     best_move = piece_index, new_index
                 beta = min(beta, eval)
-                # print(f"Minimizing Player {-player}, Depth: {depth}, Move: {piece_index, new_index}, Eval: {eval:.2f}, Min Eval: {min_eval:.2f}, Alpha: {alpha:.2f}, Beta: {beta:.2f}")
+                # print(f"Minimizing Player {-player}, Depth: {depth}, Move: {piece_index, new_index},
+                # Eval: {eval:.2f}, Min Eval: {min_eval:.2f}, Alpha: {alpha:.2f}, Beta: {beta:.2f}")
                 if alpha >= beta:
                     break
             return min_eval, best_move
