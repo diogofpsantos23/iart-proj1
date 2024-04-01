@@ -238,7 +238,7 @@ class AboyneGame:
                     running = False
         self.menu()
 
-    def play_computer_vs_computer(self, minimax_depth):
+    def play_computer_vs_computer(self, minimax_depth_blue, minimax_depth_red):
         blue_win, red_win, draw = False, False, False
         blue_move_counter, red_move_counter = 0, 0
         blue_time, red_time = 0, 0
@@ -254,7 +254,7 @@ class AboyneGame:
 
             if self.current_player == 1:
                 start_time = time.time()
-                best_score, best_move = self.game_logic.minimax(3, float('-inf'), float('inf'), self.current_player, True)
+                best_score, best_move = self.game_logic.minimax(minimax_depth_blue, float('-inf'), float('inf'), self.current_player, True)
                 end_time = time.time()
                 blue_time += end_time - start_time
                 # print(f"\nMOVE PICKED BY PLAYER {self.current_player}: {best_move}\n")
@@ -267,7 +267,7 @@ class AboyneGame:
                 self.current_player = -self.current_player
             else:
                 start_time = time.time()
-                best_score, best_move = self.game_logic.minimax(minimax_depth, float('-inf'), float('inf'), self.current_player, True)
+                best_score, best_move = self.game_logic.minimax(minimax_depth_red, float('-inf'), float('inf'), self.current_player, True)
                 end_time = time.time()
                 red_time += end_time - start_time
                 # print(f"\nMOVE PICKED BY PLAYER {self.current_player}: {best_move}\n")
@@ -331,9 +331,9 @@ class AboyneGame:
                     running = False
         return blue_win, red_win, draw, blue_move_counter, red_move_counter, blue_time, red_time
 
-    def run_N_games_computer_vs_computer(self, n, difficulty):
-        d = {2: 'Easy', 3: 'Medium', 4: 'Hard'}
-        name = d[difficulty]
+    def run_N_games_computer_vs_computer(self, n, depth_blue, depth_red):
+        d = {1: 'Easy', 2: 'Medium', 3: 'Hard'}
+        name = d[depth_red]
         blue_wins = 0
         red_wins = 0
         draws = 0
@@ -341,7 +341,7 @@ class AboyneGame:
         total_blue_time, total_red_time = 0, 0
         start_time = time.time()
         for i in range(n):
-            b, r, d, b_m, r_m, b_t, r_t = self.play_computer_vs_computer(difficulty)
+            b, r, d, b_m, r_m, b_t, r_t = self.play_computer_vs_computer(depth_blue, depth_red)
             blue_wins += b
             red_wins += r
             draws += d
@@ -352,11 +352,11 @@ class AboyneGame:
         end_time = time.time()
         execution_time = end_time - start_time
 
-        print(f"\nStatistics for {n} games of Normal Blue CPU (depth 3) vs {name} Red CPU (depth {difficulty}):")
+        print(f"\nStatistics for {n} games of Normal Blue CPU (depth {depth_blue}) vs {name} Red CPU (depth {depth_red}):")
         print(f"Blue victories: {blue_wins} ({(blue_wins/n)*100:.2f}%)")
         print(f"Red victories: {red_wins} ({(red_wins/n)*100:.2f}%)")
         print(f"Draws: {draws} ({(draws/n)*100:.2f}%)")
         print(f"Total execution time: {execution_time:.2f}s / Average per game: {execution_time/n:.2f}s")
         print(f"Average execution time per Blue move: {total_blue_time/total_blue_moves:.2f}s / per Red move: {total_red_time/total_red_moves:.2f}s\n")
 
-        self.game_draw.display_results(blue_wins, red_wins, draws, n, difficulty)
+        self.game_draw.display_results(blue_wins, red_wins, draws, n, depth_red)

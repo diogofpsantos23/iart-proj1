@@ -174,7 +174,7 @@ class GameDraw:
         self.screen.blit(text, (x_coordinate, 20))
 
     def display_results(self, blue_wins, red_wins, draws, n, difficulty):
-        d = {2: 'Easy', 3: 'Medium', 4: 'Hard'}
+        d = {1: 'Easy', 2: 'Medium', 3: 'Hard'}
 
         self.screen.fill((255, 255, 255))
 

@@ -365,6 +365,8 @@ class GameLogic:
                     counter += 2
                 elif i in [11, 12, 13, 14, 15, 16, 17] or i in [43, 44, 45, 46, 47, 48, 49]:
                     counter += 3
+                elif i in [18, 19, 20, 21, 22, 23, 24, 25] or i in [35, 36, 37, 38, 39, 40, 41, 42]:
+                    counter += 4
                 else:
                     counter += 5
         return counter
@@ -375,14 +377,14 @@ class GameLogic:
         for i in range(61):
             if self.game_draw.board[i] == player:
                 counter += self.piece_distance_to_goal(i, player)
-        return self.evaluate_f1(player) - counter*50
+        return self.evaluate_f1(player) - counter*30
 
     # Heuristic 3: Returns the difference between blue and red pieces, prioritizing capture moves
     def evaluate_f3(self, player):
         if player == 1:
-            return self.evaluate_f2(player) + sum(self.game_draw.board)*250
+            return self.evaluate_f2(player) + sum(self.game_draw.board)*200
         else:
-            return self.evaluate_f2(player) - sum(self.game_draw.board)*250
+            return self.evaluate_f2(player) - sum(self.game_draw.board)*200
 
     # Heuristic 4: Returns the difference between possible capture moves
     def evaluate_f4(self, player):
@@ -402,9 +404,9 @@ class GameLogic:
         total_blue, total_red = self.game_draw.board.count(1), self.game_draw.board.count(-1)
         available_blue, available_red = total_blue - blocked_blue, total_red - blocked_red
         if player == 1:
-            return self.evaluate_f4(player) + (available_blue - available_red)*20
+            return self.evaluate_f4(player) + (available_blue - available_red)*100
         else:
-            return self.evaluate_f4(player) + (available_red - available_blue)*20
+            return self.evaluate_f4(player) + (available_red - available_blue)*100
 
 
     # Heuristic 6: If a move to the goal cell is possible, it's executed
